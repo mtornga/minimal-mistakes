@@ -14,3 +14,47 @@ How did we get here? First, I impluse-bought the new [Raspberry Pi HQ camera sen
 Here's what that looks like when set up:
 
 ![Camera Setup](/assets/images/camerasetup.jpg "The pi and wide angle lens")
+
+The inspiring and worthwhile [Official Raspberry Pi Camera Guide](https://www.raspberrypi.org/products/camera-guide/) provides a simple one-liner to use the raspistill package to capture a timelapse. Raspistill is included in the basic Raspian OS install, which is nice. 
+
+```raspistill -w 1920 -h 1200 -t 7200000 -tl 6000 -o /var/www/html/frame%04d.jpg```
+
+This command will create a 1920x1200 pixel image every 6,000 milliseconds for 7,200,000 milliseconds and save them in the filepath /var/www/html/. They will be named frame0001, frame0002, frame0003, and so on. 
+
+You are also provided a command to compile the jpgs into a webm video.
+
+```sudo avconv -i /var/www/html/frame%04d.jpg -crf 4 -b:v 10M /var/www/html/video.webm```
+
+This one renders the video at a 25fps frame rate, a high bitrate, and a low Constant Rate Factor to produce a good-quality video. I'll admit that tinkering with video settings is something I have low patience for.
+
+Rendering is highly resource intensive and the Raspberry Pi takes about 4 hours to render a 30-second video. Anyway...
+
+Success! I have a video that I can share with Stephanie and others. But its a little slow and manual. Let's see what we can do to improve the process.
+
+## Speed
+
+The Pi guide suggests moving the images to another, more powerful computer before rendering the video. To do this, I set up an [Apache Tomcat](http://tomcat.apache.org/) HTTP web server that my laptop can reach over the home wifi network. The frames of timelapse are saved to the folder the the web server displays to the web. 
+
+Tomcat does not by default display the directory listing, so the listing parameter has to be changed to true:
+
+```<init-param>
+    <param-name>listings</param-name>
+    <param-value>true</param-value>
+</init-param>```
+
+Here is what the web server looks like from a web browser:
+
+![Webserver](/assets/images/tomcat.PNG "A screengrab of the listing of frames")
+
+A simple ```wget``` or ```curl``` will pull the images down from the server to laptop.
+
+Last, I used ffmpeg in place of avconv to render the video. I run [Ubuntu](https://ubuntu.com/) on the [Windows Subsystem for Linux](https://docs.microsoft.com/en-us/windows/wsl/about) (or WSL) on my Windows 10 OS. This allows me to sometimes avoid using Virtualbox.
+
+Here is what WSL looks like:
+
+![WSL](/assets/images/WSL.PNG "A screengrab of Linux on Windows")
+
+Its a lot smoother way to use Linux on Windows. 
+
+Anyway, avconv wasn't available on Ubuntu for some reason so I did some digging and it looks like ffmpeg does the same thing and has the same syntax. Over the course of the research I also discovered that there was a developer fight over at ffmpeg leading to multiple versions: [The real ffmpeg vs the fake one](https://stackoverflow.com/questions/9477115/what-are-the-differences-and-similarities-between-ffmpeg-libav-and-avconv)
+
