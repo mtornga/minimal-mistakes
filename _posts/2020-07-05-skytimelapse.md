@@ -37,10 +37,12 @@ The Pi guide suggests moving the images to another, more powerful computer befor
 
 Tomcat does not by default display the directory listing, so the listing parameter has to be changed to true:
 
-```<init-param>
+```
+<init-param>
     <param-name>listings</param-name>
     <param-value>true</param-value>
-</init-param>```
+</init-param>
+```
 
 Here is what the web server looks like from a web browser:
 
